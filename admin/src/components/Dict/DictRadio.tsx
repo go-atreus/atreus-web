@@ -1,6 +1,6 @@
 import type { DictRadioProps } from './typings';
 import Dict from './Dict';
-import type { SysDictDataItem } from '@/services/ballcat/system';
+import type { SysDictDataItem } from '@/services/atreus/system';
 
 import { Radio } from 'antd';
 import React from 'react';

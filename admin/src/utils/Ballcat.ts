@@ -26,6 +26,72 @@ export function remove(key: string): void {
   localStorage.removeItem(getKey(key));
 }
 
+export const Dict = {
+  getHashs: (): SysDictDataHash => {
+    const hashs = get(dict_hash_key);
+
+    return hashs ? JSON.parse(hashs) : {};
+  },
+  setHashs: (hashs: SysDictDataHash) => {
+    set(dict_hash_key, JSON.stringify(hashs));
+  },
+  getKey: (code: string) => {
+    return `${dict_data_key}_${code}`;
+  },
+  get: (code: string): SysDictData | undefined => {
+    const cache = get(Dict.getKey(code));
+    if (cache) {
+      return JSON.parse(cache);
+    }
+    return undefined;
+  },
+  set: (data: SysDictData) => {
+    set(Dict.getKey(data.dictCode), JSON.stringify(data));
+  },
+  del: (code: string) => {
+    remove(Dict.getKey(code));
+  },
+  toData: (data: SysDictData) => {
+    const items: SysDictDataItem[] = [];
+
+    (data.dictItems || []).forEach((item) => {
+      items.push({ ...item, realVal: Dict.getRealValue(data.valueType, item.value) });
+    });
+
+    return { ...data, dictItems: items };
+  },
+  getRealValue: (type: 1 | 2 | 3 | undefined, value: string): any => {
+    switch (type) {
+      case 3: {
+        if (!value) {
+          return false;
+        }
+        const lowerValue = value.toLowerCase();
+        if (['0', 'false', 'n', 'no'].includes(lowerValue)) {
+          return false;
+        }
+        if (['1', 'true', 'y', 'yes', 'ok'].includes(lowerValue)) {
+          return true;
+        }
+
+        const number = Number(lowerValue);
+        if (!Number.isNaN(number)) {
+          // 大于0 为 true
+          return number > 0;
+        }
+
+        return Boolean(value);
+      }
+      case 2:
+        // 字符串
+        return String(value);
+      default:
+        // 数字
+        return Number(value);
+    }
+  },
+};
+
 export const Token = {
   get: () => {
     return get(token_key);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { DictProps } from './typings';
 import { getLocale, useModel } from 'umi';
-import type { SysDictData, SysDictDataItem } from '@/services/ballcat/system';
+import type { SysDictData, SysDictDataItem } from '@/services/atreus/system';
 import { Spin } from 'antd';
 
 const loading = <Spin />;
@@ -31,15 +31,15 @@ const Dict = (
   },
 ) => {
   const { value, onChange, code, render } = props;
-  // const { initializing, get } = useModel('dict');
+  const { initializing, get } = useModel('dict');
   const [dictData, setDictData] = useState<SysDictData | undefined>(undefined);
   const [dom, setDom] = useState<React.ReactNode>(loading);
 
-  // useEffect(() => {
-  //   if (!initializing) {
-  //     setDictData(get(code));
-  //   }
-  // }, [get, code, initializing]);
+  useEffect(() => {
+    if (!initializing) {
+      setDictData(get(code));
+    }
+  }, [get, code, initializing]);
 
   useEffect(() => {
     // 存在且不是在加载

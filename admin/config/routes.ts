@@ -49,6 +49,16 @@ export default [
         component: './system/menu/SysMenuPage',
       },
       {
+        name: '组织架构',
+        path: '/admin/organization',
+        component: './system/organization/SysOrganizationPage',
+      },
+      {
+        name: '字典管理',
+        path: '/admin/dict',
+        component: './system/dict/SysDictPage',
+      },
+      {
         path: '/admin',
         redirect: '/admin/user',
       },
