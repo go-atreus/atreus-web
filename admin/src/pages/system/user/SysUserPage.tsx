@@ -1,4 +1,4 @@
-import { user } from '@/services/atreus/system';
+import { user, organization } from '@/services/atreus/system';
 import {
   Avatar,
   Button,
@@ -27,6 +27,8 @@ import {
   LockOutlined,
   UserOutlined,
 } from '@ant-design/icons';
+import OrganizationTree from './OrganizationTree';
+import TreeUtils from '@/utils/TreeUtils';
 
 export default () => {
   const tableRef = useRef<ActionType>();
@@ -123,10 +125,31 @@ export default () => {
     },
   ];
 
+  const loadTreeData = useCallback(() => {
+    setTreeData([]);
+    organization.query({}).then((res) => {
+      const tree = TreeUtils.toTreeData(res.data.results as unknown as any[], (item) => {
+        return { ...item, label: item.name, value: item.id };
+      });
+      setTreeData(tree || []);
+    });
+  }, []);
+
+  useEffect(() => {
+    loadTreeData();
+  }, [loadTreeData]);
+
+
   return (
     <>
       <Row gutter={14}>
-        <Col md={5}>
+      <Col md={5}>
+          <OrganizationTree
+            treeData={treeData}
+            reload={() => loadTreeData()}
+            value={oIds}
+            onChange={setOIds}
+          />
         </Col>
         <Col md={19}>
           <Page.Modal<SysUserVo, SysUserQo, SysUserDto>

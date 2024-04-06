@@ -13,6 +13,8 @@ const DictTag = (props: DictProps) => {
         for (let index = 0; index < dictItems.length; index += 1) {
           const item = dictItems[index];
           if (item.realVal === value) {
+            console.log(item);
+            
             text = getRealName(item);
             color = item.attributes.tagColor;
             break;
