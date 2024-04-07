@@ -164,7 +164,7 @@ export default () => {
                 key={`menu-item-add-${record.id}`}
                 domKey={`auth-record-add-${record.id}`}
                 text="添加"
-                permission="system:menu:add"
+                // permission="system:menu:add"
                 onClick={() => {
                   // 子项的类型 type 最大值为2
                   const type = Math.min(record.type + 1, 2);

@@ -1,12 +1,13 @@
 import { Footer, Question, SelectLang, AvatarDropdown, AvatarName } from '@/components';
-import { LinkOutlined } from '@ant-design/icons';
+import { LinkOutlined,HeartOutlined, SmileOutlined, CrownOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
-import { SettingDrawer } from '@ant-design/pro-components';
+import { PageContainer, SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import { history, Link } from '@umijs/max';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
+import { menu } from '@/services/atreus/system';
 import React from 'react';
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
@@ -17,6 +18,7 @@ const loginPath = '/user/login';
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
   currentUser?: API.CurrentUser;
+  route?: any;
   loading?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
@@ -31,12 +33,22 @@ export async function getInitialState(): Promise<{
     }
     return undefined;
   };
+  const fetchMenu = async () =>{
+    const msg = await menu.menuRouter({
+      skipErrorHandler: true,
+    });
+    return msg.data;
+  }
   // 如果不是登录页面，执行
   const { location } = history;
   if (location.pathname !== loginPath) {
     const currentUser = await fetchUserInfo();
+    const route = await fetchMenu();
+    console.log(route.routes);
+    
     return {
       fetchUserInfo,
+      route,
       currentUser,
       settings: defaultSettings as Partial<LayoutSettings>,
     };
@@ -46,6 +58,21 @@ export async function getInitialState(): Promise<{
     settings: defaultSettings as Partial<LayoutSettings>,
   };
 }
+
+const IconMap = {
+  smile: <SmileOutlined />,
+  heart: <HeartOutlined />,
+  crown: <CrownOutlined/>,
+};
+
+
+
+const loopMenuItem = (menus: any[]): MenuDataItem[] =>
+  menus.map(({ icon, children, ...item }) => ({
+    ...item,
+    icon: icon && IconMap[icon as 'smile'],
+    children: children && loopMenuItem(children),
+  }));
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
@@ -98,13 +125,14 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         ]
       : [],
     menuHeaderRender: undefined,
+    menu: { request: async () => loopMenuItem(initialState?.route) },
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
     // 增加一个 loading 的状态
     childrenRender: (children) => {
       // if (initialState?.loading) return <PageLoading />;
       return (
-        <>
+        <PageContainer header={{title: false}}>
           {children}
           {isDev && (
             <SettingDrawer
@@ -119,7 +147,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
               }}
             />
           )}
-        </>
+        </PageContainer>
       );
     },
     ...initialState?.settings,

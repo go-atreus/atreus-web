@@ -3,6 +3,13 @@ import { request } from 'umi';
 import type { SysMenuRoleGrateVo } from '..';
 import type { SysMenuDto, SysMenuQo, SysMenuVo } from './typings';
 
+export async function menuRouter(body: Partial<SysMenuQo>) {
+  return request<R<SysMenuVo[]>>('/api/system/menu/router', {
+    method: 'POST',
+    data: body,
+  });
+}
+
 export async function query(body: Partial<SysMenuQo>) {
   return request<R<SysMenuVo[]>>('/api/system/menu/list', {
     method: 'POST',
