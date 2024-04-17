@@ -46,7 +46,7 @@ export async function updatePermissionIds(roleCode: string, permissionIds: numbe
 }
 
 export async function getPermissionIds(roleCode: string) {
-  return request<R<number[]>>(`system/role/permission/code/${roleCode}`, { method: 'GET' });
+  return request<R<number[]>>(`/api/system/permission/code/${roleCode}`, { method: 'GET' });
 }
 
 export async function listSelectData() {

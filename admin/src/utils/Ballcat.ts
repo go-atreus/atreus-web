@@ -145,5 +145,5 @@ export function isLogin(initialState?: GLOBAL.Is) {
   }
 
   // 存在token 已登录
-  return !!initialState?.user?.access_token && !!Token.get();
+  return !!Token.get();
 }

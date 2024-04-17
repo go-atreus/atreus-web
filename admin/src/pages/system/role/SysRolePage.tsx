@@ -84,7 +84,7 @@ export default () => {
     // 获取可授权菜单
     menu.listRoleGrant().then((menuRes) => {
       const treeData = TreeUtils.ofList(
-        menuRes.data as unknown as TreeNode<SysMenuRoleGrateVo>[],
+        menuRes.data.results as unknown as TreeNode<SysMenuRoleGrateVo>[],
         0,
         (item) => {
           return {

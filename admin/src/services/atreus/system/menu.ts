@@ -38,5 +38,5 @@ export async function del(body: SysMenuVo) {
 }
 
 export async function listRoleGrant() {
-  return request<R<SysMenuRoleGrateVo>>(`system/menu/grant-list`, { method: 'GET' });
+  return request<R<SysMenuRoleGrateVo>>(`/api/system/menu/grant-list`, { method: 'GET' });
 }

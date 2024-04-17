@@ -1,9 +1,10 @@
 import { Footer, Question, SelectLang, AvatarDropdown, AvatarName } from '@/components';
-import { LinkOutlined,HeartOutlined, SmileOutlined, CrownOutlined } from '@ant-design/icons';
+import { LinkOutlined, HeartOutlined, SmileOutlined, CrownOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { PageContainer, SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import { history, Link } from '@umijs/max';
+import type { GLOBAL } from '@/typings';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
@@ -18,6 +19,7 @@ const loginPath = '/user/login';
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
   currentUser?: API.CurrentUser;
+  user?: GLOBAL.Is.user;
   route?: any;
   loading?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
@@ -33,7 +35,7 @@ export async function getInitialState(): Promise<{
     }
     return undefined;
   };
-  const fetchMenu = async () =>{
+  const fetchMenu = async () => {
     const msg = await menu.menuRouter({
       skipErrorHandler: true,
     });
@@ -44,16 +46,17 @@ export async function getInitialState(): Promise<{
   if (location.pathname !== loginPath) {
     const currentUser = await fetchUserInfo();
     let route = {}
-    if(currentUser){
+    if (currentUser) {
       route = await fetchMenu();
     }
-    
-    return {
-      fetchUserInfo,
-      route,
-      currentUser,
+    let res = {
+      fetchUserInfo: fetchUserInfo,
+      route: route,
+      currentUser: currentUser,
+      user: currentUser,
       settings: defaultSettings as Partial<LayoutSettings>,
-    };
+    }
+    return res;
   }
   return {
     fetchUserInfo,
@@ -64,7 +67,7 @@ export async function getInitialState(): Promise<{
 const IconMap = {
   smile: <SmileOutlined />,
   heart: <HeartOutlined />,
-  crown: <CrownOutlined/>,
+  crown: <CrownOutlined />,
 };
 
 
@@ -120,11 +123,11 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     ],
     links: isDev
       ? [
-          <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
-            <LinkOutlined />
-            <span>OpenAPI 文档</span>
-          </Link>,
-        ]
+        <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
+          <LinkOutlined />
+          <span>OpenAPI 文档</span>
+        </Link>,
+      ]
       : [],
     menuHeaderRender: undefined,
     menu: { request: async () => loopMenuItem(initialState?.route) },
@@ -134,7 +137,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     childrenRender: (children) => {
       // if (initialState?.loading) return <PageLoading />;
       return (
-        <PageContainer header={{title: false}}>
+        <PageContainer header={{ title: false }}>
           {children}
           {isDev && (
             <SettingDrawer

@@ -25,7 +25,7 @@ import Settings from '../../../../config/defaultSettings';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
 import { createStyles } from 'antd-style';
-import {Token} from "@/utils/Ballcat";
+import {Token, User} from "@/utils/Ballcat";
 
 const useStyles = createStyles(({ token }) => {
   return {
@@ -131,6 +131,8 @@ const Login: React.FC = () => {
           defaultMessage: '登录成功！',
         });
         message.success(defaultLoginSuccessMessage);
+        // 缓存用户信息
+        User.set(JSON.stringify(msg.data));
         Token.set(msg.data.token)
         await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
