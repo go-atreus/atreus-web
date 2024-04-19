@@ -167,3 +167,46 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
 export const request = {
   ...errorConfig,
 };
+
+const NotFound = () => <div>404</div>
+const Wrapper = ({ children }: any) => (
+  <React.Suspense>{children}</React.Suspense>
+)
+const Add = React.lazy(() => import('@/pages/system/role/SysRolePage'))
+
+const MAPS: any = {
+  '/add': (
+    <Wrapper>
+      <Add />
+    </Wrapper>
+  ),
+}
+
+let roleRoutes: any[] = []
+const getRoleRoutes = () => {
+  return new Promise<void>((resolve) => {
+    setTimeout(() => {
+      roleRoutes = ['/add']
+      resolve()
+    }, 1000)
+  })
+}
+
+export const patchClientRoutes = ({ routes }: any) => {
+  console.log(routes[0].routes)
+  routes[0].routes.unshift(
+    ...roleRoutes.map((path: string) => ({
+      id: path,
+      path,
+      element: MAPS?.[path] || <NotFound />,
+    }))
+  )
+}
+
+export const render = async (oldRender: Function) => {
+  // 如果请求太慢，可选：自己实现一个加载器效果
+  document.querySelector('#root')!.innerHTML = `<div>loading...</div>` 
+
+  await getRoleRoutes()
+  oldRender()
+}

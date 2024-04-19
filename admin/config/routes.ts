@@ -23,58 +23,30 @@ export default [
     ],
   },
   {
+    path: '/a',
+    name: 'table',
+    icon: 'smile',
+    component: './TableList',
+  },
+  {
     path: '/welcome',
     name: 'welcome',
     icon: 'smile',
     component: './Welcome',
   },
-  {
-    path: '/admin',
-    name: '系统管理',
-    icon: 'crown',
-    routes: [
-      {
-        name: '用户管理',
-        path: '/admin/user',
-        component: './system/user/SysUserPage',
-      },
-      {
-        name: '角色管理',
-        path: '/admin/role',
-        component: './system/role/SysRolePage',
-      },
-      {
-        name: '菜单管理',
-        path: '/admin/menu',
-        component: './system/menu/SysMenuPage',
-      },
-      {
-        name: '组织架构',
-        path: '/admin/organization',
-        component: './system/organization/SysOrganizationPage',
-      },
-      {
-        name: '字典管理',
-        path: '/admin/dict',
-        component: './system/dict/SysDictPage',
-      },
-      {
-        path: '/admin',
-        redirect: '/admin/user',
-      },
-    ],
-  },
-  {
-    name: 'list.table-list',
-    icon: 'table',
-    path: '/list',
-    component: './TableList',
-  },
-  
-  {
-    path: '/',
-    redirect: '/welcome',
-  },
+  // {
+  //   path: '/',
+  //   layout: false,
+  //   component: '../layouts',
+  //   routes: [
+  //     {
+  //       path: '/welcome',
+  //       name: 'welcome',
+  //       icon: 'smile',
+  //       component: './Welcome',
+  //     },
+  //   ],
+  // },
   {
     path: '*',
     layout: false,

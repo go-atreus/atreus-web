@@ -101,7 +101,7 @@ export default () => {
     role
       .getPermissionIds(data.code)
       .then((roleRes) => {
-        setGrantSelectedId(roleRes.data);
+        setGrantSelectedId(roleRes.data.menus);
       })
       .finally(() => setGrantLoading(false));
   };
