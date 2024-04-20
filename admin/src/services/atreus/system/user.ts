@@ -17,7 +17,7 @@ export async function query(body: QueryParam<SysUserQo>) {
 }
 
 export async function create(body: SysUserDto) {
-  return request<R<any>>('system/user', {
+  return request<R<any>>('/api/system/user', {
     method: 'POST',
     data: body,
   });

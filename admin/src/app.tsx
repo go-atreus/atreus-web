@@ -88,6 +88,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
       },
     },
+    formatMessage: false,
     waterMarkProps: {
       content: initialState?.currentUser?.name,
     },

@@ -167,7 +167,7 @@ export default () => {
             formRef={formRef}
             handlerData={(body, st) => {
               if (st === 'create') {
-                return { ...body, pass: pwd.encrypt(body.pass) };
+                return { ...body, password: body.pass };
               }
               return body;
             }}
