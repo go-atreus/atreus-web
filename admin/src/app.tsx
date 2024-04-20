@@ -3,16 +3,23 @@ import { LinkOutlined, HeartOutlined, SmileOutlined, CrownOutlined } from '@ant-
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { PageContainer, SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
-import { history, Link } from '@umijs/max';
+import { history, Link, Navigate } from '@umijs/max';
 import type { GLOBAL } from '@/typings';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
 import { menu } from '@/services/atreus/system';
 import React from 'react';
+import { Token } from './utils/Ballcat';
+import Icon from './components/Icon';
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
-
+const fetchMenu = async () => {
+  const msg = await menu.menuRouter({
+    skipErrorHandler: true,
+  });
+  return msg.data;
+}
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
  * */
@@ -20,7 +27,6 @@ export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
   currentUser?: API.CurrentUser;
   user?: GLOBAL.Is.user;
-  route?: any;
   loading?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
@@ -35,23 +41,13 @@ export async function getInitialState(): Promise<{
     }
     return undefined;
   };
-  const fetchMenu = async () => {
-    const msg = await menu.menuRouter({
-      skipErrorHandler: true,
-    });
-    return msg.data;
-  }
+
   // 如果不是登录页面，执行
   const { location } = history;
   if (location.pathname !== loginPath) {
     const currentUser = await fetchUserInfo();
-    let route = {}
-    if (currentUser) {
-      route = await fetchMenu();
-    }
     let res = {
       fetchUserInfo: fetchUserInfo,
-      route: route,
       currentUser: currentUser,
       user: currentUser,
       settings: defaultSettings as Partial<LayoutSettings>,
@@ -70,14 +66,16 @@ const IconMap = {
   crown: <CrownOutlined />,
 };
 
-
-
-const loopMenuItem = (menus: any[]): MenuDataItem[] =>
-  menus.map(({ icon, children, ...item }) => ({
-    ...item,
-    icon: icon && IconMap[icon as 'smile'],
-    children: children && loopMenuItem(children),
-  }));
+const renderMenuItem = (title: string, hasSub: boolean, icon?: string) => {
+  const iconType = typeof(icon)
+  return (
+    <span className="ant-pro-menu-item" title={title}>
+      {/* string 时，使用 Icon 组件，如果本身 icon 已经是 object 了，则直接渲染 */}
+      {!icon || icon === '' ? undefined : iconType === 'string' ? <Icon type={icon}/> : icon }
+      <span className="ant-pro-menu-item-title">{title}</span>
+    </span>
+  );
+};
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
@@ -130,7 +128,30 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       ]
       : [],
     menuHeaderRender: undefined,
-    menu: { request: async () => loopMenuItem(initialState?.route) },
+    subMenuItemRender: (item) => {
+      const { name: title, icon } = item;
+      return renderMenuItem(title, true, icon);
+    },
+    menuItemRender: (menuItemProps) => {
+      console.log(menuItemProps)
+      const { name: title, icon } = menuItemProps;
+      if (!menuItemProps.path || location.pathname === menuItemProps.path) {
+        return renderMenuItem(title, false, icon);
+      }
+
+      if (menuItemProps.isUrl) {
+        return (
+          <a target={menuItemProps.target} href={menuItemProps.path}>
+            {renderMenuItem(title, false, icon)}
+          </a>
+        );
+      }
+
+      return (
+        <Link to={menuItemProps.path}>{renderMenuItem(title, false, icon)}</Link>
+      );
+    },
+    // menu: { request: async () => loopMenuItem(initialState?.route) },
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
     // 增加一个 loading 的状态
@@ -172,41 +193,99 @@ const NotFound = () => <div>404</div>
 const Wrapper = ({ children }: any) => (
   <React.Suspense>{children}</React.Suspense>
 )
-const Add = React.lazy(() => import('@/pages/system/role/SysRolePage'))
-
-const MAPS: any = {
-  '/add': (
-    <Wrapper>
-      <Add />
-    </Wrapper>
-  ),
-}
 
 let roleRoutes: any[] = []
+
 const getRoleRoutes = () => {
-  return new Promise<void>((resolve) => {
-    setTimeout(() => {
-      roleRoutes = ['/add']
-      resolve()
-    }, 1000)
+  return fetchMenu().then(res => {
+    roleRoutes = res.routes
+  }).catch(err => {
+    console.error(err)
+  })
+}
+
+export function patchRoutes({ routes, routeComponents }) {
+  console.log('patchRoutes')
+}
+
+const loopRouteItem = (menus: any[], pId: number | string): RouteItem[] => {
+  return menus.flatMap((item) => {
+    let Component: React.ComponentType<any> | null = null;
+    if (item.uri !== '') {
+      // 防止配置了路由，但本地暂未添加对应的页面，产生的错误
+      // item.uri = 'system/user/SysUserPage'
+      Component = React.lazy(() => new Promise((resolve, reject) => {
+        import(`@/pages/${item.uri}`)
+          .then(module => resolve(module))
+          .catch((error) => {
+            console.error(error)
+            resolve(import(`@/pages/exception/404.tsx`))
+          })
+      }))
+    }
+    if (item.type === 0) {
+      return [
+        {
+          path: item.path,
+          name: item.title,
+          icon: item.icon,
+          id: item.id,
+          parentId: pId,
+          children: [
+            {
+              path: item.path,
+              element: <Navigate to={item.children[0].path} replace />,
+            },
+            ...loopRouteItem(item.children, item.id)
+          ]
+        }
+      ]
+    } else {
+      return [
+        {
+          path: item.path,
+          name: item.title,
+          icon: item.icon,
+          id: item.id,
+          parentId: pId,
+          element: (
+            <React.Suspense fallback={<div>Loading...</div>}>
+              {Component && <Component />}
+            </React.Suspense>
+          )
+        }
+      ]
+    }
   })
 }
 
 export const patchClientRoutes = ({ routes }: any) => {
-  console.log(routes[0].routes)
-  routes[0].routes.unshift(
-    ...roleRoutes.map((path: string) => ({
-      id: path,
-      path,
-      element: MAPS?.[path] || <NotFound />,
-    }))
-  )
+  console.log('patchClientRoutes', routes)
+  // 这里获取的是 routes.ts 中配置自定义 layout
+  const routerIndex = routes.findIndex((item: any) => item.path === '/')
+  const parentId = routes[routerIndex].id
+
+
+  const MAPS: any = {}
+  if (roleRoutes) {
+    const newRoutes = routes[routerIndex]['routes']
+
+    // 往路由中动态添加
+    newRoutes.push(
+      ...loopRouteItem(roleRoutes, parentId)
+    )
+  }
+
 }
 
 export const render = async (oldRender: Function) => {
   // 如果请求太慢，可选：自己实现一个加载器效果
-  document.querySelector('#root')!.innerHTML = `<div>loading...</div>` 
-
-  await getRoleRoutes()
+  console.log('render')
+  document.querySelector('#root')!.innerHTML = `<div>loading...</div>`
+  const token = Token.get()
+  if(token){
+    await getRoleRoutes()
+  }
+  
   oldRender()
 }

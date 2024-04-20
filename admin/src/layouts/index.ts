@@ -1,3 +1,3 @@
 import BasicLayout from '@/layouts/BasicLayout';
 
-// export default BasicLayout;
+export default BasicLayout;

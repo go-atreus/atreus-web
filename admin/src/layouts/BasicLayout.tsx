@@ -12,7 +12,7 @@ import type {
   Settings,
 } from '@ant-design/pro-layout';
 import ProLayout, { WaterMark } from '@ant-design/pro-layout';
-import React, { lazy, useEffect, useState } from 'react';
+import React, { lazy, useEffect, useRef, useState } from 'react';
 import { KeepAlive as ReactKeepAlive, useAliveController } from 'react-activation';
 import { history, Link, useIntl, useModel } from 'umi';
 import { Navigate, Outlet, useAccessMarkedRoutes, useAppData } from '@umijs/max';
@@ -25,6 +25,20 @@ export type BasicLayoutProps = {
   };
   settings: Settings;
 } & ProLayoutProps;
+
+const NotFound = () => <div>404</div>
+const Wrapper = ({ children }: any) => (
+  <React.Suspense>{children}</React.Suspense>
+)
+const Add = React.lazy(() => import('@/pages/system/user/SysUserPage'))
+
+const MAPS: any = {
+  '/table': (
+    <Wrapper>
+      <Add />
+    </Wrapper>
+  ),
+}
 
 const renderMenuItem = (title: string, hasSub: boolean, icon?: string) => {
   return (
@@ -97,7 +111,9 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
   const { routeArray, firstPath, load, setLoad } = useModel('dynamic-route');
   const { initialState } = useModel('@@initialState');
   const { isContentFull } = useModel('full-screen');
-
+  const actionRef = useRef<{
+    reload: () => void;
+  }>();
   const { multiTab } = initialState?.settings || {};
 
   I18n.setIntl(useIntl());
@@ -111,23 +127,24 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
   const [keepAliveProps, setKeepAliveProps] = useState<{ id?: string; name?: string }>({});
 
   console.log(clientRoutes)
-  // 现在的 layout 及 wrapper 实现是通过父路由的形式实现的, 会导致路由数据多了冗余层级, proLayout 消费时, 无法正确展示菜单, 这里对冗余数据进行过滤操作
-  const newRoutes = filterRoutes(clientRoutes.filter(route => route.id === 'ant-design-pro-layout'), (route) => {
-    return (!!route.isLayout && route.id !== 'ant-design-pro-layout') || !!route.isWrapper;
-  })
-  const [route] = useAccessMarkedRoutes(mapRoutes(newRoutes))
-  const r = [{
-    name: '一级菜单A',
-    path: '/a',
-  }]
-  const to = r![0].path;
-  route.children.unshift({
-    path: '/a',
-    name: "首页",
-    element: lazy(() => import(`@/pages/TableList`)),
-  })
-
-  console.log(route)
+  // 直接获取自定义的 layout，在 routes.ts 中配置的
+  const route = clientRoutes[1]
+  
+  // useEffect(() =>{
+  //   console.log('clientRoutes')
+  //   const roleRoutes = [{name:'角色管理',path:'/role'}]
+  //   route.children.unshift(
+  //     ...roleRoutes.map((path: any) => ({
+  //       id: path.path,
+  //       name: path.name,
+  //       path: path.path,
+  //       parentId: "ant-design-pro-layout",
+  //       element: <NotFound />,
+  //     }))
+  //   )
+  //   actionRef.current?.reload();
+  //   console.log(route)
+  // },[clientRoutes])
 
   // useEffect(() => {
   //   if (location.pathname && location.pathname !== '/') {
@@ -188,6 +205,7 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
       footerRender={() => <Footer />}
       {...initialState?.settings}
       logo={settings.logo}
+      actionRef={actionRef}
       formatMessage={I18n.getIntl().formatMessage}
       {...props}
       // loading={!load || keepAliveProps.id === undefined || !initialState?.user?.access_token}
@@ -213,7 +231,6 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
         return renderMenuItem(title, true, icon);
       }}
       menuItemRender={(menuItemProps) => {
-        console.log(menuItemProps)
         const { name: title, icon } = menuItemProps;
         if (!menuItemProps.path || location.pathname === menuItemProps.path) {
           return renderMenuItem(title, false, icon);
@@ -238,14 +255,14 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
         style={{ height: '100%' }}
       >
 
-        <ReactKeepAlive
+        {/* <ReactKeepAlive
           key={`keep-alive-${keepAliveProps.id}`}
           id={keepAliveProps.id}
           name={keepAliveProps.name}
-        >
-
+        > */}
+            
           <Outlet />
-        </ReactKeepAlive>
+        {/* </ReactKeepAlive> */}
       </WaterMark>
     </ProLayout>
   );

@@ -155,7 +155,7 @@ export default () => {
           <Page.Modal<SysUserVo, SysUserQo, SysUserDto>
             {...user}
             title="系统用户"
-            rowKey="userId"
+            rowKey="id"
             columns={dataColumns}
             tableRef={tableRef}
             formRef={formRef}

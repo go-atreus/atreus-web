@@ -137,6 +137,7 @@ const Login: React.FC = () => {
         await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
         history.push(urlParams.get('redirect') || '/');
+        window.location.reload();
         return;
       }
       console.log(msg);

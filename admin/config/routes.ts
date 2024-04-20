@@ -22,31 +22,13 @@ export default [
       },
     ],
   },
-  {
-    path: '/a',
-    name: 'table',
-    icon: 'smile',
-    component: './TableList',
-  },
+  // 这个不能少，否则会在动态路由中报错。
   {
     path: '/welcome',
     name: 'welcome',
     icon: 'smile',
     component: './Welcome',
   },
-  // {
-  //   path: '/',
-  //   layout: false,
-  //   component: '../layouts',
-  //   routes: [
-  //     {
-  //       path: '/welcome',
-  //       name: 'welcome',
-  //       icon: 'smile',
-  //       component: './Welcome',
-  //     },
-  //   ],
-  // },
   {
     path: '*',
     layout: false,

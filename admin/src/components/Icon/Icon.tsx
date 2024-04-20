@@ -15,7 +15,6 @@ const convertTypeToIconPath = (type: string) => {
 
 const Icon: React.FC<IconProps> = (props: IconProps) => {
   const { type } = props;
-
   // type 值异常
   if (!type || type.length === 0) {
     return <></>;
