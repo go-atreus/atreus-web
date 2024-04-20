@@ -18,7 +18,7 @@ export async function create(body: SysRole) {
 }
 
 export async function edit(body: SysRole) {
-  return request<R<any>>('system/role', {
+  return request<R<any>>('/api/system/role', {
     method: 'PUT',
     data: body,
   });
@@ -39,9 +39,9 @@ export async function listRoles() {
 }
 
 export async function updatePermissionIds(roleCode: string, permissionIds: number[]) {
-  return request<R<boolean>>(`system/role/permission/code/${roleCode}`, {
+  return request<R<boolean>>(`/api/system/permission/code/${roleCode}`, {
     method: 'PUT',
-    data: permissionIds,
+    data: {ids:permissionIds},
   });
 }
 
@@ -50,7 +50,7 @@ export async function getPermissionIds(roleCode: string) {
 }
 
 export async function listSelectData() {
-  return request<R<SelectData<SysRole>[]>>(`system/role/select`, { method: 'GET' });
+  return request<R<SelectData<SysRole>[]>>(`/api/system/role/select`, { method: 'GET' });
 }
 
 export async function listRoleBindUser(body: QueryParam<SysRoleBindQo>) {

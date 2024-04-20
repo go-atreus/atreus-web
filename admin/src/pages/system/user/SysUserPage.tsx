@@ -19,16 +19,20 @@ import UrlUtils from '@/utils/UrlUtils';
 import { DictBadge, DictSelect, DictTag } from '@/components/Dict';
 import type { FormStatus, ModalFormRef } from '@/components/Form';
 import { FormDictRadio } from '@/components/Form';
+import SelectRole from './SelectRole';
 import Auth from '@/components/Auth';
 import {
   DeleteOutlined,
   DownOutlined,
   InfoOutlined,
   LockOutlined,
+  SmileOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import OrganizationTree from './OrganizationTree';
 import TreeUtils from '@/utils/TreeUtils';
+import React from 'react';
+import Grant from './Grant';
 
 export default () => {
   const tableRef = useRef<ActionType>();
@@ -140,10 +144,12 @@ export default () => {
   }, [loadTreeData]);
 
 
+
+
   return (
     <>
       <Row gutter={14}>
-      <Col md={5}>
+        <Col md={5}>
           <OrganizationTree
             treeData={treeData}
             reload={() => loadTreeData()}
@@ -167,81 +173,89 @@ export default () => {
             }}
             operateBar={[
               (dom, record) => {
+                const items: MenuProps['items'] = [
+                  {
+                    key: '1',
+                    label: (
+                      <Auth
+                        // permission="system:user:edit"
+                        render={() => (
+                          <a onClick={() =>
+                            formRef.current?.edit(record as unknown as SysUserDto)
+                          }
+                          >编辑
+                          </a>
+                        )}
+                      />
+                    ),
+                  },
+                  {
+                    key: '2',
+                    label: (
+                      <Auth
+                        key={`user-grant-auth-${record.userId}`}
+                        permission="system:user:grant"
+                        render={() => (
+                          <a
+                            onClick={() => {
+                              setGrateRecord(record);
+                              setgrateVisible(true);
+                            }}
+                          >
+                            授权
+                          </a>
+                        )}
+                      />
+                    ),
+                  },
+                  {
+                    key: '3',
+                    label: (
+                      <Auth
+                        key={`user-pass-auth-${record.userId}`}
+                        // permission="system:user:pass"
+                        render={() => (
+                          <a
+                            onClick={() => {
+                              setPassRecord(record);
+                              setPassVisible(true);
+                            }}
+                          >
+                            改密
+                          </a>
+                        )}
+                      />
+                    ),
+                  },
+                  {
+                    key: '4',
+                    danger: true,
+                    label: (
+                      <Auth
+                        key={`user-del-auth-${record.userId}`}
+                        permission="system:user:del"
+                        render={() => (
+                          <Popconfirm
+                            key="user-del-popconfirm"
+                            title={`确认要删除吗?`}
+                            overlayStyle={{ width: '150px' }}
+                            onConfirm={() => {
+                              user.del(record).then(() => {
+                                message.success('删除成功!');
+                                tableRef.current?.reload();
+                              });
+                            }}
+                          >
+                            <a style={{ color: 'red' }}>删除</a>
+                          </Popconfirm>
+                        )}
+                      />),
+                  },
+                ];
                 return (
                   <Dropdown
                     key={`user-operte-${record.userId}`}
-                    overlay={
-                      <Menu key={`user-menu-${record.userId}`}>
-                        <Auth
-                          key={`user-edit-auth-${record.userId}`}
-                          permission="system:user:edit"
-                          render={() => (
-                            <Menu.Item key={`user-edit-item-${record.userId}`}>
-                              <a
-                                onClick={() =>
-                                  formRef.current?.edit(record as unknown as SysUserDto)
-                                }
-                              >
-                                编辑
-                              </a>
-                            </Menu.Item>
-                          )}
-                        />
-                        <Auth
-                          key={`user-grant-auth-${record.userId}`}
-                          permission="system:user:grant"
-                          render={() => (
-                            <Menu.Item key={`user-grant-item-${record.userId}`}>
-                              <a
-                                onClick={() => {
-                                  setGrateRecord(record);
-                                  setgrateVisible(true);
-                                }}
-                              >
-                                授权
-                              </a>
-                            </Menu.Item>
-                          )}
-                        />
-                        <Auth
-                          key={`user-pass-auth-${record.userId}`}
-                          permission="system:user:pass"
-                          render={() => (
-                            <Menu.Item key={`user-pass-item-${record.userId}`}>
-                              <a
-                                onClick={() => {
-                                  setPassRecord(record);
-                                  setPassVisible(true);
-                                }}
-                              >
-                                改密
-                              </a>
-                            </Menu.Item>
-                          )}
-                        />
-                        <Auth
-                          key={`user-del-auth-${record.userId}`}
-                          permission="system:user:del"
-                          render={() => (
-                            <Menu.Item key={`user-del-item-${record.userId}`}>
-                              <Popconfirm
-                                key="user-del-popconfirm"
-                                title={`确认要删除吗?`}
-                                overlayStyle={{ width: '150px' }}
-                                onConfirm={() => {
-                                  user.del(record).then(() => {
-                                    message.success('删除成功!');
-                                    tableRef.current?.reload();
-                                  });
-                                }}
-                              >
-                                <a style={{ color: 'red' }}>删除</a>
-                              </Popconfirm>
-                            </Menu.Item>
-                          )}
-                        />
-                      </Menu>
-                    }
+                    menu={{ items }}
                   >
                     <a style={{ userSelect: 'none' }}>操作</a>
                   </Dropdown>
@@ -369,7 +383,7 @@ export default () => {
                   <></>
                 ) : (
                   <Form.Item name="roleCodes" label="角色" initialValue={[]}>
-                    
+                    <SelectRole />
                   </Form.Item>
                 )}
               </Col>
@@ -377,6 +391,8 @@ export default () => {
           </Page.Modal>
         </Col>
       </Row>
+      <Grant visible={grateVisible} onVisibleChange={setgrateVisible} record={grateRecord} />
+
     </>
   );
 };

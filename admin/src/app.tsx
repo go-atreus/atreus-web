@@ -133,7 +133,6 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       return renderMenuItem(title, true, icon);
     },
     menuItemRender: (menuItemProps) => {
-      console.log(menuItemProps)
       const { name: title, icon } = menuItemProps;
       if (!menuItemProps.path || location.pathname === menuItemProps.path) {
         return renderMenuItem(title, false, icon);

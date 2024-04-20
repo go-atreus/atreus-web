@@ -37,7 +37,7 @@ export async function del(body: SysUserVo) {
 }
 
 export function getScope(body: SysUserVo) {
-  return request<R<SysUserScopeVo>>(`system/user/scope/${body.userId}`, {
+  return request<R<SysUserScopeVo>>(`/api/system/user/scope/${body.id}`, {
     method: 'get',
   });
 }
